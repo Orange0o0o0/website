@@ -22,6 +22,7 @@
             border-radius: 5px;
         }
     </style>
+    <script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.0.2/echarts.common.js"></script>
 </head>
 <body>
     <div class="container">
@@ -29,6 +30,7 @@
         <div class="keywords">
             <h2>关键词：</h2>
             <p>{{ keywords|join:", " }}</p>
+            <div id="keywords_chart" style="width: 600px;height:400px;"></div>
         </div>
         <div class="topic">
             <h2>主题：</h2>
@@ -36,5 +38,26 @@
         </div>
         <a href="/" class="back-button">返回主页面</a>
     </div>
+  <script>
+    var chart = echarts.init(document.getElementById('keywords_chart'));
+    var option = {
+        title: {
+            text: '关键词重要程度'
+        },
+        tooltip: {},
+        xAxis: {
+            data: JSON.parse('{{ chart_keywords|escapejs }}')
+        },
+        yAxis: {},
+        series: [{
+            name: '重要程度',
+            type: 'bar',
+            data: JSON.parse('{{ keyword_weights|escapejs }}')
+        }]
+    };
+    chart.setOption(option);
+    </script>
+
+
 </body>
 </html>
