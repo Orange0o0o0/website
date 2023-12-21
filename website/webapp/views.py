@@ -1,26 +1,23 @@
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
+from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 import jieba.analyse
-from collections import Counter
-from gensim import corpora, models
+from sumy.parsers.plaintext import PlaintextParser
+from sumy.nlp.tokenizers import Tokenizer
+from sumy.summarizers.lsa import LsaSummarizer
 
 # 设置停用词库
 jieba.analyse.set_stop_words('static/stop_words.txt')
 
 def extract_topic(text):
-    # 从文件中读取停用词
-    with open('static/stop_words.txt', 'r', encoding='utf-8') as f:
-        stop_words = f.read().splitlines()
-    # 分词并去除停用词
-    words = [word for word in jieba.cut(text) if word not in stop_words]
-    # 创建语料库
-    dictionary = corpora.Dictionary([words])
-    corpus = [dictionary.doc2bow(words)]
-    # 创建LDA模型
-    lda = models.LdaModel(corpus, id2word=dictionary, num_topics=1)
-    # 提取主题
-    topics = lda.print_topics(num_words=5)
-    return topics[0][1]
+    # 创建一个文本解析器
+    parser = PlaintextParser.from_string(text, Tokenizer("chinese"))
+    # 创建一个摘要生成器
+    summarizer = LsaSummarizer()
+    # 生成摘要
+    summary = summarizer(parser.document, 1)
+    # 返回摘要的第一句
+    return str(summary[0])
 
 @csrf_exempt
 def extract_keywords(request):
@@ -31,6 +28,6 @@ def extract_keywords(request):
             text = file.read().decode('utf-8')
         keywords = jieba.analyse.extract_tags(text, topK=10)
         topic = extract_topic(text)
-        return JsonResponse({'keywords': keywords, 'topic': topic})
+        return render(request, 'display.html', {'keywords': keywords, 'topic': topic})
     else:
         return HttpResponse('请通过POST方法提交文本或文件')

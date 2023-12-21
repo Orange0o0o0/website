@@ -1,10 +1,40 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>关键字</title>
+    <title>关键词和主题提取</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+        }
+        .keywords, .topic {
+            margin-bottom: 20px;
+        }
+        .back-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
-    <h1>关键字</h1>
-    <p>{{ keywords }}</p>
+    <div class="container">
+        <h1>关键词和主题提取结果</h1>
+        <div class="keywords">
+            <h2>关键词：</h2>
+            <p>{{ keywords|join:", " }}</p>
+        </div>
+        <div class="topic">
+            <h2>主题：</h2>
+            <p>{{ topic }}</p>
+        </div>
+        <a href="/" class="back-button">返回主页面</a>
+    </div>
 </body>
 </html>
