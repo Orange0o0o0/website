@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import jieba.analyse
 from collections import Counter
@@ -22,7 +22,6 @@ def extract_topic(text):
     topics = lda.print_topics(num_words=5)
     return topics[0][1]
 
-
 @csrf_exempt
 def extract_keywords(request):
     if request.method == 'POST':
@@ -32,6 +31,6 @@ def extract_keywords(request):
             text = file.read().decode('utf-8')
         keywords = jieba.analyse.extract_tags(text, topK=10)
         topic = extract_topic(text)
-        return HttpResponse('关键字：' + ', '.join(keywords) + '<br>' + '主题：' + topic)
+        return JsonResponse({'keywords': keywords, 'topic': topic})
     else:
         return HttpResponse('请通过POST方法提交文本或文件')
