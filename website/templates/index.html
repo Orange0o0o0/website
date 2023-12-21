@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>主页</title>
+</head>
+<body>
+    <h1>欢迎来到我的网站！</h1>
+    <form action="/webapp/extract_keywords/" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="text">输入文本：</label><br>
+        <textarea id="text" name="text" rows="4" cols="50"></textarea><br>
+        <input type="submit" value="提交文本"><br>
+        <label for="file">选择文件：</label><br>
+        <input type="file" id="file" name="file"><br>
+        <input type="submit" value="提交文件">
+    </form>
+</body>
+</html>
