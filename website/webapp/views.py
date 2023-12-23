@@ -1,3 +1,4 @@
+import torch.cuda
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
@@ -10,6 +11,7 @@ import json
 import pythoncom
 import os
 import tempfile
+
 
 def read_doc(file):
     pythoncom.CoInitialize()
@@ -59,6 +61,27 @@ def extract_topic(text):
     # 否则，返回摘要的第一句
     return str(summary[0])
 
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+
+def summarize_text(text):
+    # 加载预训练的T5模型和对应的分词器
+    tokenizer = AutoTokenizer.from_pretrained("t5-base")
+    model = AutoModelForSeq2SeqLM.from_pretrained("t5-base")
+
+    # 使用分词器处理输入文本
+    inputs = tokenizer(text, truncation=True, max_length=512, return_tensors="pt")
+
+    # 使用模型进行预测
+    summary_ids = model.generate(inputs["input_ids"])
+
+    # 解码生成的摘要
+    summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True, clean_up_tokenization_spaces=False)
+
+    return summary
+
+
 
 @csrf_exempt
 def extract_keywords(request):
@@ -73,11 +96,18 @@ def extract_keywords(request):
             elif file.name.endswith('.pdf'):
                 text = read_pdf(file)
             else:
-                text = file.read().decode('utf-8')
+                try:
+                    text = file.read().decode('utf-8')
+                except Exception:
+                    text = ""  # 或者你可以设置一个其他的默认值
         keywords_with_weights = jieba.analyse.extract_tags(text, topK=10, withWeight=True)
         keywords, keyword_weights = zip(*keywords_with_weights)
         topic = extract_topic(text)
-        return render(request, 'display.html', {'keywords': keywords,'topic': topic, 'keyword_weights': json.dumps(keyword_weights), 'chart_keywords': json.dumps(keywords)})
+        summary = summarize_text(text)
+        return render(request, 'display.html',
+                      {'keywords': keywords, 'topic': topic, 'keyword_weights': json.dumps(keyword_weights),
+                       'chart_keywords': json.dumps(keywords), 'summary': summary})
     else:
         return HttpResponse('请通过POST方法提交文本或文件')
+
 
